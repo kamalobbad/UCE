@@ -11,6 +11,7 @@ import os
 import requests
 from tqdm import tqdm
 import tarfile
+import torch
 
 
 def get_shapes_dict(dataset_path):
@@ -101,3 +102,17 @@ def figshare_download(url, save_path):
        with tarfile.open(save_path) as tar:
             tar.extractall(path=os.path.dirname(save_path))
             print("Done!")
+
+
+def get_ESM2_embeddings_x(token_dim, token_file):
+    # Load in ESM2 embeddings and special tokens
+    all_pe = torch.load(token_file)
+    if all_pe.shape[0] == 143574:
+        torch.manual_seed(23)
+        CHROM_TENSORS = torch.normal(mean=0, std=1, size=(1895, token_dim))
+        # 1895 is the total number of chromosome choices, it is hardcoded for now
+        all_pe = torch.vstack(
+            (all_pe, CHROM_TENSORS))  # Add the chrom tensors to the end
+        all_pe.requires_grad = False
+
+    return all_pe

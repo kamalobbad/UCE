@@ -1,0 +1,11 @@
+10k_pbmcs_proc_chroms.pkl
+10k_pbmcs_proc_counts.npz
+10k_pbmcs_proc_pe_idx.torch
+10k_pbmcs_proc_proc.h5ad
+10k_pbmcs_proc_shapes_dict.pkl
+10k_pbmcs_proc_starts.pkl
+10k_pbmcs_proc_uce_adata.h5ad
+
+/data
+
+/model_files
