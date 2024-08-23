@@ -149,6 +149,17 @@ if __name__ == "__main__":
     parser.add_argument("--offset_pkl_path",
                         default="./model_files/species_offsets.pkl", type=str,
                         help="PKL file which contains offsets for each species.")
+    
+    # masking arguments
+    parser.add_argument("--genes_to_mask", 
+                        nargs='+',
+                        default= None,
+                        type=str,
+                        help="List of genes to mask")
+    
+    parser.add_argument("--genes_to_pe_idx",
+                        default="./model_files/gene_to_pe_index.pkl",type=str,
+                        help="Path to gene to protein embedding index mapping")
 
     args = parser.parse_args()
     accelerator = Accelerator(project_dir=args.dir)
