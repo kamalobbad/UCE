@@ -81,6 +81,7 @@ class MultiDatasetSentences(data.Dataset):
 class MultiDatasetSentenceCollator(object):
     def __init__(self, args):
         self.pad_length = args.pad_length
+        self.genes_to_mask = args.genes_to_mask
 
         if args.genes_to_mask is not None:
             self.genes_to_pe_idx_file = args.genes_to_pe_idx
@@ -106,7 +107,6 @@ class MultiDatasetSentenceCollator(object):
         i = 0
         max_len = 0
 
-        temp_flag = False
         for bs, msk, idx, seq_len, cs in batch:
             batch_sentences[i, :] = bs
             cell_sentences[i, :] = cs
@@ -115,17 +115,14 @@ class MultiDatasetSentenceCollator(object):
             idxs[i] = idx
 
             # temp flask 
+            if self.genes_to_mask is not None:
+                for idx in self.idx_to_mask:
+                    # find indices where idx in batch_sentences is not equal to idx
+                    mask[i, batch_sentences[i, :] == idx] = 0
 
-            for idx in self.idx_to_mask:
-                # find indices where idx in batch_sentences is not equal to idx
-                mask[i, batch_sentences[i, :] == idx] = 0
-
-                temp_flag = True
 
             i += 1
 
-        if temp_flag:
-            print("Masking done")
 
         return batch_sentences[:, :max_len] , mask[:, :max_len], idxs, cell_sentences
 

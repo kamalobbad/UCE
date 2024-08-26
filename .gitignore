@@ -5,7 +5,21 @@
 10k_pbmcs_proc_shapes_dict.pkl
 10k_pbmcs_proc_starts.pkl
 10k_pbmcs_proc_uce_adata.h5ad
+STAT2_KO10k_pbmcs_proc_chroms.pkl
+STAT2_KO10k_pbmcs_proc_counts.npz
+STAT2_KO10k_pbmcs_proc_pe_idx.torch
+STAT2_KO10k_pbmcs_proc_proc.h5ad
+STAT2_KO10k_pbmcs_proc_shapes_dict.pkl
+STAT2_KO10k_pbmcs_proc_starts.pkl
+STAT2_KO10k_pbmcs_proc_uce_adata.h5ad
+
+
+
+/STAT2_KO
+/FOS_KO
+/SPI1_KO
 
 /data
 
 /model_files
+/eval_outputs

@@ -109,7 +109,13 @@ class TransformerModel(nn.Module):
 
     def predict(self, cell_embedding, gene_embeddings):
         gene_embeddings = self.gene_embedding_layer(gene_embeddings)
+
+        cell_embedding_expanded = cell_embedding.unsqueeze(1).repeat(1, gene_embeddings.shape[0], 1)
+
+        gene_embeddings_expanded = gene_embeddings.unsqueeze(0).repeat(cell_embedding.shape[0], 1, 1)
+
+        combined_embeddings = torch.cat((cell_embedding_expanded, gene_embeddings_expanded), dim=2)
         dec = self.binary_decoder \
-            (torch.hstack((cell_embedding, gene_embeddings)))
+            (combined_embeddings)
         return dec
 
