@@ -151,7 +151,7 @@ if __name__ == "__main__":
                         help="PKL file which contains offsets for each species.")
     
     # masking arguments
-    parser.add_argument("--genes_to_mask", 
+    parser.add_argument("--genes_to_knockin", 
                         nargs='+',
                         default= None,
                         type=str,
@@ -160,6 +160,11 @@ if __name__ == "__main__":
     parser.add_argument("--genes_to_pe_idx",
                         default="./model_files/gene_to_pe_index.pkl",type=str,
                         help="Path to gene to protein embedding index mapping")
+    
+    parser.add_argument("--num_knockin", 
+                        default=1,
+                        type=int,
+                        help="Number of times to knockin gene")
 
     args = parser.parse_args()
     accelerator = Accelerator(project_dir=args.dir)

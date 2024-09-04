@@ -81,17 +81,19 @@ class MultiDatasetSentences(data.Dataset):
 class MultiDatasetSentenceCollator(object):
     def __init__(self, args):
         self.pad_length = args.pad_length
-        self.genes_to_mask = args.genes_to_mask
+        self.gene_to_knockin = args.genes_to_knockin
 
-        if args.genes_to_mask is not None:
+        if args.genes_to_knockin is not None:
             self.genes_to_pe_idx_file = args.genes_to_pe_idx
             # load with pickle
             with open(self.genes_to_pe_idx_file, "rb") as f:
                 self.genes_to_pe_idx = pickle.load(f)
+
+            self.num_knockin = args.num_knockin
             
-            self.idx_to_mask = []
-            for g in args.genes_to_mask:
-                self.idx_to_mask.append(self.genes_to_pe_idx[g])
+            self.idx_to_knockin = []
+            for g in args.genes_to_knockin:
+                self.idx_to_knockin.append(self.genes_to_pe_idx[g])
             
 
 
@@ -108,17 +110,26 @@ class MultiDatasetSentenceCollator(object):
         max_len = 0
 
         for bs, msk, idx, seq_len, cs in batch:
+            
+            if self.gene_to_knockin is not None:
+                # number of genes to knockin
+                num_genes = len(self.idx_to_knockin)
+                # get the sequence length and find the amount of possible knockins per gene
+                number_of_knockins_per_gene = min(self.pad_length - seq_len, self.num_knockin) / num_genes
+                # todo fix this bad code
+                number_of_knockins_per_gene = min(int(number_of_knockins_per_gene), self.num_knockin)
+                # we add the knockins to the end of the sequence so we aren't deleting anything
+                for id in self.idx_to_knockin:
+                    for _ in range(number_of_knockins_per_gene):
+                        bs[:,seq_len] = id
+                        msk[:,seq_len] = 1
+                        seq_len += 1
+            
             batch_sentences[i, :] = bs
             cell_sentences[i, :] = cs
             max_len = max(max_len, seq_len)
             mask[i, :] = msk
             idxs[i] = idx
-
-            # temp flask 
-            if self.genes_to_mask is not None:
-                for idx in self.idx_to_mask:
-                    # find indices where idx in batch_sentences is not equal to idx
-                    mask[i, batch_sentences[i, :] == idx] = 0
 
 
             i += 1
