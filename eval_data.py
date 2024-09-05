@@ -104,14 +104,22 @@ class MultiDatasetSentenceCollator(object):
 
         idxs = torch.zeros(batch_size)
 
+        # make a copy of everything 
+        batch_sentences_copy = batch_sentences.clone()
+        mask_copy = mask.clone()
+
         i = 0
         max_len = 0
 
         for bs, msk, idx, seq_len, cs in batch:
             batch_sentences[i, :] = bs
+            # add copy for sentence
+            batch_sentences_copy[i, :] = bs
             cell_sentences[i, :] = cs
             max_len = max(max_len, seq_len)
             mask[i, :] = msk
+            # add copy for mask
+            mask_copy[i, :] = msk
             idxs[i] = idx
 
             # temp flask 
@@ -124,7 +132,8 @@ class MultiDatasetSentenceCollator(object):
             i += 1
 
 
-        return batch_sentences[:, :max_len] , mask[:, :max_len], idxs, cell_sentences
+        return batch_sentences[:, :max_len] , mask[:, :max_len], idxs, \
+                cell_sentences, mask_copy[:, :max_len], batch_sentences_copy[:, :max_len]
 
 
 

@@ -231,9 +231,11 @@ def run_eval(adata, name, pe_idx_path, chroms_path, starts_path, shapes_dict,
     dataloader = accelerator.prepare(dataloader)
     pbar = tqdm(dataloader, disable=not accelerator.is_local_main_process)
     dataset_embeds = []
+    # adding a copy of dataset embeds
+    dataset_embeds_copy = []
     with torch.no_grad():
         for batch in pbar:
-            batch_sentences, mask, idxs = batch[0], batch[1], batch[2]
+            batch_sentences, mask, idxs, mask_copy = batch[0], batch[1], batch[2], batch[4]
             batch_sentences = batch_sentences.permute(1, 0)
             if args.multi_gpu:
                 batch_sentences = model.module.pe_embedding(batch_sentences.long())
@@ -242,16 +244,25 @@ def run_eval(adata, name, pe_idx_path, chroms_path, starts_path, shapes_dict,
             batch_sentences = nn.functional.normalize(batch_sentences,
                                                       dim=2)  # Normalize token outputs now
             _, embedding = model.forward(batch_sentences, mask=mask)
+            _, embedding_copy = model.forward(batch_sentences, mask=mask_copy)
             # Fix for duplicates in last batch
             accelerator.wait_for_everyone()
             embeddings = accelerator.gather_for_metrics((embedding))
+            # copy
+            embeddings_copy = accelerator.gather_for_metrics((embedding_copy))
             if accelerator.is_main_process:
                 dataset_embeds.append(embeddings.detach().cpu().numpy())
+                # copy
+                dataset_embeds_copy.append(embeddings_copy.detach().cpu().numpy())
 
     accelerator.wait_for_everyone()
     if accelerator.is_main_process:
         dataset_embeds = np.vstack(dataset_embeds)
+        # copy 
+        dataset_embeds_copy = np.vstack(dataset_embeds_copy)
         adata.obsm["X_uce"] = dataset_embeds
+        # copy
+        adata.obsm["X_uce_copy"] = dataset_embeds_copy
         write_path = args.dir + f"{name}_uce_adata.h5ad"
         adata.write(write_path)
 
